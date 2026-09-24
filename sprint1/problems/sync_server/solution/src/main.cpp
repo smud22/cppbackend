@@ -119,12 +119,17 @@ StringResponse MakeStringResponse(http::status status, std::string_view body, un
 StringResponse HandleRequest(StringRequest&& req) {
     http::verb method = req.method();
     if (method == http::verb::get || method == http::verb::head) {
-        std::string target;
-        if (req.target().length() > 1 && req.target()[0] == '/') {
-            target += "Hello, ";
-            target += req.target().substr(1);
+        auto target = req.target();
+        if (!target.empty() && target.front() == '/') {
+            target.remove_prefix(1);
         }
-        return MakeStringResponse(http::status::ok, std::move(target), req.version(), req.keep_alive(), ContentType::TEXT_HTML);
+        std::string body = "Hello, ";
+        body.append(target);
+        auto response = MakeStringResponse(http::status::ok, body, req.version(), req.keep_alive());
+        if (method == http::verb::head) {
+            response.body().clear();
+        }
+        return response;
     } else {
         return MakeStringResponse(http::status::method_not_allowed, "Invalid method"sv, req.version(), req.keep_alive(), ContentType::TEXT_HTML);
     }

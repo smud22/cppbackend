@@ -3,3 +3,6 @@ boost/1.78.0
 
 [generators]
 cmake
+
+[options]
+boost:extra_b2_flags=cxxflags=-Wno-enum-constexpr-conversion
